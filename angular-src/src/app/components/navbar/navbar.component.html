@@ -1,0 +1,30 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <a class="navbar-brand" href="#">Music BTYE</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item" [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <a class="nav-link" [routerLink]="['/home']">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <a class="nav-link" [routerLink]="['/discover']">Discover</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <a class="nav-link" [routerLink]="['/about']">About</a>
+      </li>
+    </ul>
+    <!-- <form class="form-inline my-2 my-lg-0">
+      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form> -->
+    <form (click)="onLogin()">
+        <button [routerLink]="['/login']" class="btn btn-outline-success my-2 my-sm-0">Login</button>
+    </form>
+  </div>
+</nav>
