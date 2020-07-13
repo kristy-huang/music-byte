@@ -1,3 +1,14 @@
 <div class="container">
-
+  <h1 class="text-align-center">Featured Playlists</h1>
+  <div
+    (click)="getFeaturedPlaylist()"
+    id="homeCarousel"
+    class="carousel slide"
+    data-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item" *ngFor="let playlistImg of playlistImgs; let i = index" [ngClass]="{'active' : i == 0}">
+        <img class="d-block w-30 mx-auto" src={{playlistImg}} alt={{playlistImg}} />
+      </div>
+    </div>
+  </div>
 </div>

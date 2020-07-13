@@ -8,13 +8,21 @@ import { map } from 'rxjs/operators'
   providedIn: 'root'
 })
 export class AuthService {
+  authURL: string = 'http://localhost:3000/api/login';
+  validateURL: string = 'http://localhost:3000/api/callback';
 
   constructor(private http: HttpClient) { }
 
   authenticateUser() {
-    let corsHeaders = new HttpHeaders();
-    corsHeaders.append('Content-Type', 'application/json');
+    let headers = new HttpHeaders();
+    headers.append('Content-Type', 'application/json');
     return this.http.get(
-      'http://localhost:3000/user/login', {headers: corsHeaders}).pipe(map((res: any) => res));
+      this.authURL, {headers: headers}).pipe(map((res: any) => res));
+  }
+
+  validateLogin() {
+    let headers = new HttpHeaders();
+    headers.append('Content-Type', 'application/json');
+    return this.http.get(this.validateURL, {headers: headers}).pipe(map((res: any) => res));
   }
 }
