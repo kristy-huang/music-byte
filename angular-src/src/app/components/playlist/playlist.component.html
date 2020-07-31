@@ -1,0 +1,54 @@
+<div *ngIf="clickedPlaylist | async as playlist">
+  <header>
+    <div class="row no-gutters">
+      <div class="col-sm-5 text-center">
+        <img
+          class="d-block mx-auto my-2"
+          src="{{ playlist.images }}"
+          alt="{{ playlist.images }}"
+        />
+        <a href="{{ playlist.external_urls }}" target="_blank">
+          <button type="button" class="btn btn-success py-1 my-2">
+            Open in Spotify
+          </button>
+        </a>
+      </div>
+
+      <div class="col-sm-7 playlistInfo my-auto">
+        <p class="lead my-0 playlist_name">{{ playlist.name }}</p>
+        <p class="text-muted my-0 playlist_description">
+          {{ playlist.description }}
+        </p>
+        <p class="my-0 playlist_owner">Owner: {{ playlist.owner }}</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="tracks-container">
+    <div *ngFor="let track of tracks | async">
+      <div class="d-flex align-items-center">
+        <div class="flex-grow-1">
+          <p class="track_name">{{ track.name }}</p>
+          <p class="text-muted track_artists">{{ track.artists }}</p>
+        </div>
+        <p class="text-muted track_duration">
+          {{ track.duration_ms | msToMin }}
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- Spinner -->
+  <!-- <div class="row pb-5">
+    <div class="col-md-12 p-5">
+      <ngx-spinner
+        bdOpacity="0.9"
+        bdColor=""
+        size="default"
+        color="#4BBF73"
+        type="line-scale-pulse-out"
+        [fullScreen]="false"
+      >
+      </ngx-spinner>
+    </div>
+  </div> -->
+</div>

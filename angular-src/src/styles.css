@@ -1,4 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
-.container{
-    padding-top: 20vh;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.container {
+  padding-top: 56px;
+  margin-top: 15px;
+}
+
+@media only screen and (max-width: 768px) {
+  .container {
+    padding-top: 64.25px;
+  }
 }

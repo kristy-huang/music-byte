@@ -1,0 +1,71 @@
+header {
+  padding-top: 56px;
+  padding-bottom: 20px;
+  margin: 0px 0px;
+  background-color: black;
+}
+
+img {
+  object-fit: cover;
+  height: 200px;
+  width: 200px;
+  padding-top: 20px;
+}
+
+@media only screen and (max-width: 576px) {
+  .playlistInfo {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .tracks-container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media only screen and (min-width: 577px) {
+  .playlistInfo {
+    padding-right: 20px;
+  }
+
+  .tracks-container {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
+
+.btn {
+  border-radius: 25px;
+}
+
+.playlist_name {
+  font-size: 24px;
+  color: white;
+}
+
+.playlist_owner {
+  padding-top: 5px;
+  font-weight: bold;
+  color: white;
+}
+
+.track_name {
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+  color: lightgray;
+}
+
+.track_artists {
+  font-size: 10px;
+  padding-top: 0px;
+  margin-top: 0px;
+}
+
+.track_duration {
+  color: lightgray;
+}

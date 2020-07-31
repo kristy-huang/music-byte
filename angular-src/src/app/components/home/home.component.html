@@ -1,14 +1,40 @@
-<div class="container">
-  <h1 class="text-align-center">Featured Playlists</h1>
+<div class="container text-center">
+  <flash-messages></flash-messages>
+  <h3>For You</h3>
   <div
-    (click)="getFeaturedPlaylist()"
-    id="homeCarousel"
-    class="carousel slide"
-    data-ride="carousel">
-    <div class="carousel-inner">
-      <div class="carousel-item" *ngFor="let playlistImg of playlistImgs; let i = index" [ngClass]="{'active' : i == 0}">
-        <img class="d-block w-30 mx-auto" src={{playlistImg}} alt={{playlistImg}} />
+    class="results"
+    infiniteScroll
+    [infiniteScrollDistance]="2"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="onScroll()"
+  >
+    <div class="row">
+      <div class="col-6 col-sm-4 col-lg-3" *ngFor="let playlist of playlists">
+        <a (click)="openPlaylist(playlist)">
+          <img
+            class="d-block mx-auto"
+            id="coverImg"
+            src="{{ playlist.images }}"
+            alt="{{ playlist.images }}"
+          />
+          <p class="title">{{ playlist.name }}</p>
+        </a>
       </div>
+    </div>
+  </div>
+  
+  <!-- Spinner -->
+  <div class="row pb-5">
+    <div class="col-md-12 p-5">
+      <ngx-spinner
+        bdOpacity="0.9"
+        bdColor=""
+        size="default"
+        color="#4BBF73"
+        type="line-scale-pulse-out"
+        [fullScreen]="false"
+      >
+      </ngx-spinner>
     </div>
   </div>
 </div>

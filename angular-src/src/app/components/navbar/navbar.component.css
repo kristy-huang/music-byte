@@ -1,0 +1,14 @@
+.navbar {
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+
+.navbar-toggler {
+  border: 0px;
+}
+
+.profileImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50px;
+}

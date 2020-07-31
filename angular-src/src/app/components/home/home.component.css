@@ -1,0 +1,43 @@
+h3 {
+    color: white;
+    padding-bottom: 30px;
+}
+
+a {
+    cursor: pointer;
+}
+
+#coverImg {
+    object-fit: cover;
+    height: 200px;
+    width: 200px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+@media only screen and (max-width: 800px) {
+    #coverImg {
+        height: 150px;
+        width: 150px;
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    #coverImg {
+        height: 130px;
+        width: 130px;
+    }
+}
+
+@media only screen and (max-width: 325px) {
+    #coverImg {
+        height: 100px;
+        width: 100px;
+    }
+}
+
+.title {
+    font-size: x-small;
+    margin-bottom: 20px;
+    color: lightgray;
+}

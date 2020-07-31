@@ -41,30 +41,54 @@ const getRandomQuery = function() {
             randomQuery = '%' + randomCharacter + '%';
             break;
     }
-
     console.log(randomQuery);
-
     return randomQuery;
+}
+
+/**
+ * Uses the Fisher-Yates shuffle algorithm to shuffle array in O(n) time
+ */
+
+const shuffleArr = function(arr) {
+    let length = arr.length;
+    for (let i = length - 1; i > 0; i--) {
+        pick = Math.floor(Math.random() * (i + 1));
+        temp = arr[i];
+        arr[i] = arr[pick];
+        arr[pick] = temp;
+    }
+    return arr;
 }
 
 const search = function(access_token, query, type) {
     const randomOffset = Math.floor(Math.random() * 500);
+    const limit = 8;
 
     return axios({
         method: 'get',
-        url: `https://api.spotify.com/v1/search?q=${query}&type=${type}&offset=${randomOffset}`,
+        url: `https://api.spotify.com/v1/search?q=${query}&type=${type}&limit=${limit}&offset=${randomOffset}`,
         headers: {
             'Authorization': `Bearer ${access_token}`
         }
     })
 };
 
-const searchAll = async function(res, access_token, myGenres, type) {
+const searchAll = async function(access_token, myGenres, type) {
     let query = '';
     let keywords = [];
     let promiseArr = [];
+    let max_length = 0;
 
-    for (let i = 0; i < myGenres.length; i++) {
+    if (myGenres.length >= 25) {
+        max_length = 25;
+    } else {
+        max_length = myGenres.length;
+    }
+
+    // myGenres = shuffleArr(myGenres);
+    // console.log(myGenres);
+
+    for (let i = 0; i < max_length; i++) {
         query = '';
         keywords = myGenres[i].split(' ');
         for (let i = 0; i < keywords.length; i++) {
@@ -78,52 +102,36 @@ const searchAll = async function(res, access_token, myGenres, type) {
         }
         promiseArr[i] = search(access_token, query, type);
     }
-
-    Promise.all(promiseArr).then(result => {
-        let playlistData = [];
-        let max_length = 0;
-        let counter = 0;
-
-        if (result.length >= 50) {
-            max_length = 50;
-        } else {
-            max_length = result.length;
-        }
-
-        for (let i = 0; i < max_length; i++) {
-            if (result[i].data.playlists.offset < result[i].data.playlists.total) {
-                playlistData[counter++] = result[i].data.playlists;
-            }
-            // console.log(result[i].data);
-        }
-        console.log('Success: Retreived recommended playlists');
-        res.status(200).send(playlistData);
-    })
+    return Promise.all(promiseArr);
 }
 
-const getArtists = async function(res, getMyTopArtists, getFollowedArtists, myGenres, counter) {
+const getArtists = async function(res, getMyTopArtists, getFollowedArtists, myGenres) {
     let myArtists = [];
     let artistIndex = 0;
+    const max_length = 20;
+
     let [topArtists, followedArtists] = await Promise.all([
         getMyTopArtists,
         getFollowedArtists
     ]);
+
     for (let i = 0; i < topArtists.body.items.length; i++) {
         myArtists[artistIndex++] = {
             name: topArtists.body.items[i].name,
             id: topArtists.body.items[i].id
         }
         for (let j = 0; j < topArtists.body.items[i].genres.length; j++) {
-            myGenres[counter++] = topArtists.body.items[i].genres[j];
+            myGenres.push(topArtists.body.items[i].genres[j]);
         }
     };
-    for (let i = 0; i < followedArtists.body.artists.items.length; i++) {
+
+    for (let i = 0; i < max_length; i++) {
         myArtists[artistIndex++] = {
             name: followedArtists.body.artists.items[i].name,
             id: followedArtists.body.artists.items[i].id
         }
         for (let j = 0; j < followedArtists.body.artists.items[i].genres.length; j++) {
-            myGenres[counter++] = followedArtists.body.artists.items[i].genres[j];
+            myGenres.push(followedArtists.body.artists.items[i].genres[j]);
         }
     };
 
@@ -131,9 +139,40 @@ const getArtists = async function(res, getMyTopArtists, getFollowedArtists, myGe
     res.status(200).send(myArtists);
 };
 
+const getTracks = function(access_token, playlistId) {
+    return axios({
+        method: 'get',
+        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        headers: {
+            'Authorization': `Bearer ${access_token}`
+        }
+    })
+};
+
+const getArtistsFromTracks = function(access_token, url) {
+    return axios({
+        method: 'get',
+        url: url,
+        headers: {
+            'Authorization': `Bearer ${access_token}`
+        }
+    })
+};
+
+const getGenreFromTracks = function(access_token, urls) {
+    let promiseArr = [];
+    for (i = 0; i < urls.length; i++) {
+        promiseArr[i] = getArtistsFromTracks(access_token, urls[i]);
+    }
+    return Promise.all(promiseArr);
+};
+
 module.exports = {
     getUserProfile: getUserProfile,
     getRandomQuery: getRandomQuery,
+    shuffleArr: shuffleArr,
     searchAll: searchAll,
-    getArtists: getArtists
+    getArtists: getArtists,
+    getTracks: getTracks,
+    getGenreFromTracks: getGenreFromTracks
 };

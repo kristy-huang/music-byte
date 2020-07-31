@@ -1,1 +1,65 @@
-<p>discover works!</p>
+<div class="container text-center">
+  <flash-messages></flash-messages>
+  <h3>Discover</h3>
+  <!-- Search form -->
+  <div class="md-form active-green active-green-2 mb-3 mt-0">
+    <input
+      class="form-control"
+      name="searchStr"
+      [(ngModel)]="searchStr"
+      (keyup)="searchPlaylist()"
+      type="text"
+      placeholder="Search for a playlist"
+      aria-label="Search"
+    />
+  </div>
+
+  <div *ngIf="searchStr">
+    <div *ngFor="let res of searchRes">
+      <div class="row" (click)="openPlaylist(res)">
+        <div class="col-md-12">
+          <div class="search-res well">
+            <p>{{res.name}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="results"
+    infiniteScroll
+    [infiniteScrollDistance]="2"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="onScroll()"
+  >
+    <div class="row">
+      <div class="col-6 col-sm-4 col-lg-3" *ngFor="let playlist of playlists">
+        <a (click)="openPlaylist(playlist)">
+          <img
+            class="d-block mx-auto"
+            id="coverImg"
+            src="{{ playlist.images }}"
+            alt="{{ playlist.images }}"
+          />
+          <p class="title">{{ playlist.name }}</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div class="row pb-5">
+    <div class="col-md-12 p-5">
+      <ngx-spinner
+        bdOpacity="0.9"
+        bdColor=""
+        size="default"
+        color="#4BBF73"
+        type="line-scale-pulse-out"
+        [fullScreen]="false"
+      >
+      </ngx-spinner>
+    </div>
+  </div>
+</div>
