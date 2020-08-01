@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 //Home page, only for testing
 app.get('/', (req, res) => {
-    res.send('express homepage');
+     res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
 //Routing to ./routes/api.js
