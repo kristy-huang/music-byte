@@ -10,7 +10,7 @@ export class AuthGuardService implements CanActivate {
 
   canActivate(): boolean {
     this.authService.isLoggedInObs.subscribe((data) => {
-      console.log(data);
+      // console.log(data);
       if (!data) {
         this.router.navigate(['/welcome']);
         return false;

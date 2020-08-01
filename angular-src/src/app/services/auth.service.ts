@@ -8,9 +8,9 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthService {
-  private authURL: string = 'http://localhost:3000/api/login';
-  private validateURL: string = 'http://localhost:3000/api/verify';
-  private logoutURL: string = 'http://localhost:3000/api/logout';
+  private authURL: string = 'api/login';
+  private validateURL: string = 'api/verify';
+  private logoutURL: string = 'api/logout';
 
   private isLoggedInSubject: BehaviorSubject<boolean> = new BehaviorSubject<
     boolean
@@ -22,7 +22,7 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   setLoginState(state: boolean) {
-    console.log(state);
+    // console.log(state);
     this.isLoggedInSubject.next(state);
   }
 

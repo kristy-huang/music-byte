@@ -14,8 +14,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class DiscoverComponent implements OnInit {
   private randomPlaylistURL: string =
-    'http://localhost:3000/api/randomPlaylists';
-  private searchURL: string = 'http://localhost:3000/api/search';
+    'api/randomPlaylists';
+  private searchURL: string = 'api/search';
   public playlists: Playlist[];
   private isStopped: boolean = true;
   public searchStr: string;

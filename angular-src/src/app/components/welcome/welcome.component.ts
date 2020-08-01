@@ -19,7 +19,7 @@ export class WelcomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscription = this.authService.isLoggedInObs.subscribe((data) => {
-      console.log(data);
+      // console.log(data);
       this.isNotLoggedIn = !data;
     });
   }

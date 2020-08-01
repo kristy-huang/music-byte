@@ -14,11 +14,10 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
-  private myTopTracksURL: string = 'http://localhost:3000/api/myTopTracks';
-  private myArtistsURL: string = 'http://localhost:3000/api/myArtists';
-  private myGenresURL: string = 'http://localhost:3000/api/myGenres';
-  private recommendedPlaylistURL: string =
-    'http://localhost:3000/api/recommendplaylists';
+  private myTopTracksURL: string = 'api/myTopTracks';
+  private myArtistsURL: string = 'api/myArtists';
+  private myGenresURL: string = 'api/myGenres';
+  private recommendedPlaylistURL: string = 'api/recommendplaylists';
 
   public playlists: Playlist[];
   private isStopped: boolean = true;
@@ -35,7 +34,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadData();
     this.subscription = this.authService.isLoggedInObs.subscribe((data) => {
-      console.log(data);
+      // console.log(data);
     });
   }
 
@@ -108,17 +107,17 @@ export class HomeComponent implements OnInit {
 
   private loadMore() {
     let newData: Playlist[];
-    this.spotifyService
-      .getPlaylists(this.recommendedPlaylistURL)
-      .subscribe((data: Playlist[]) => {
+    this.spotifyService.getPlaylists(this.recommendedPlaylistURL).subscribe(
+      (data: Playlist[]) => {
         newData = data;
         this.playlists = this.playlists.concat(newData);
         this.spinner.hide();
         this.isStopped = true;
-      }, 
+      },
       (err) => {
         console.log(err);
-      });
+      }
+    );
   }
 
   onScroll() {

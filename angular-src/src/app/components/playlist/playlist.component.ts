@@ -13,15 +13,14 @@ import { SpotifyService } from '../../services/spotify.service';
   styleUrls: ['./playlist.component.css'],
 })
 export class PlaylistComponent implements OnInit {
-  private tracksURL: string = 'http://localhost:3000/api/tracks';
-  private selectedPlaylistURL: string =
-    'http://localhost:3000/api/selectedPlaylist';
-    
+  private tracksURL: string = 'api/tracks';
+  private selectedPlaylistURL: string = 'api/selectedPlaylist';
+
   clickedPlaylist: Observable<Playlist>;
   tracks: Observable<Track[]>;
   private playlistId: string;
 
-  //TODO: add audio, try to extract the tracks from the playlist response 
+  //TODO: add audio, try to extract the tracks from the playlist response
   //instead of making another request to get the tracks. This may increase speed
   //BUGS: when a description contains links, it is not displayed properly. Eg:
   //instead of being displayed as a hyperlink, it is displayed as the url

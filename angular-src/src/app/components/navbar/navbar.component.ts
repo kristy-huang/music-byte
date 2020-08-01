@@ -16,7 +16,7 @@ export class NavbarComponent implements OnInit {
   myProfile: Profile = new Profile('', null);
   welcomeMsg: string = 'Welcome';
   profileImg: string = null;
-  private profileInfoURL: string = 'http://localhost:3000/api/myProfile';
+  private profileInfoURL: string = 'api/myProfile';
   private subscription: Subscription;
 
   constructor(
