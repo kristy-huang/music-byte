@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 //Home page, only for testing
 app.get('/', (req, res) => {
-     res.sendFile(path.join(__dirname, 'dist/angular/index.html'));
+     res.sendFile(path.join(__dirname, 'dist/angular-src/index.html'));
 });
 
 //Routing to ./routes/api.js
