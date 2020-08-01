@@ -13,14 +13,14 @@ const port = process.env.PORT || 8080;
 app.use(cors());
 
 // Set Static Folder
-app.use(express.static(__dirname, 'dist', { index: false }));
+app.use(express.static(path.join(__dirname, 'dist')));
 
 //Body Parser Middleware
 app.use(bodyParser.json());
 
 //Home page, only for testing
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'src', 'index.html'));
+    res.send('express homepage');
 });
 
 //Routing to ./routes/api.js
