@@ -34,6 +34,10 @@ app.get('/loading', (req, res) => {
 //Routing to ./routes/api.js
 app.use('/api', api);
 
+app.get('*', (req, res) => {
+     res.sendFile(path.join(__dirname, 'angular-src/dist/index.html'));
+});
+
 app.listen(port, () => {
     console.log(`Server started on port ${port}`);
 });
