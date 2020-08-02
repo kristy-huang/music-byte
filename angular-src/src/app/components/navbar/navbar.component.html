@@ -49,16 +49,18 @@
         data-toggle="collapse"
         data-target=".navbar-collapse.show"
       >
-        <a
-          class="nav-link py-0 dropdown"
+        <img
+          class="nav-link py-0 dropdown profileImg"
           type="button"
           id="dropdownMenuButton"
           data-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
-        >
-          <img class="profileImg" src="{{ profileImg }}" alt="Profile" />
-        </a>
+          src="{{ profileImg }}"
+          alt="Profile"
+        />
+        <!-- <img class="profileImg" src="{{ profileImg }}" alt="Profile" /> -->
+
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <p class="dropdown-header">{{ welcomeMsg }}</p>
           <a (click)="onLogout()" class="dropdown-item text-capitalize">
