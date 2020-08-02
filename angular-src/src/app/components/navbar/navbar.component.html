@@ -62,12 +62,9 @@
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <p class="dropdown-header">{{ welcomeMsg }}</p>
           <div class="dropdown-divider"></div>
-          <button
-            (click)="onLogout()"
-            class="btn my-2 my-sm-0 py-1 dropdown-item text-capitalize"
-          >
+          <a (click)="onLogout()" class="dropdown-item text-capitalize">
             Logout
-          </button>
+          </a>
         </div>
       </li>
     </ul>
