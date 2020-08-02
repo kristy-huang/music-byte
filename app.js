@@ -19,6 +19,10 @@ app.use(express.static(path.join(__dirname, 'angular-src/dist')));
 //Body Parser Middleware
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+     res.sendFile(path.join(__dirname, 'angular-src/dist/index.html'));
+});
+
 app.get('/welcome', (req, res) => {
      res.sendFile(path.join(__dirname, 'angular-src/dist/index.html'));
 });
