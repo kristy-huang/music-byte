@@ -116,22 +116,26 @@ const getArtists = async function(res, getMyTopArtists, getFollowedArtists, myGe
     ]);
 
     for (let i = 0; i < topArtists.body.items.length; i++) {
-        myArtists[artistIndex++] = {
-            name: topArtists.body.items[i].name,
-            id: topArtists.body.items[i].id
-        }
-        for (let j = 0; j < topArtists.body.items[i].genres.length; j++) {
-            myGenres.push(topArtists.body.items[i].genres[j]);
+        if (topArtists.body.items[i] != undefined) {
+            myArtists[artistIndex++] = {
+                name: topArtists.body.items[i].name,
+                id: topArtists.body.items[i].id
+            }
+            for (let j = 0; j < topArtists.body.items[i].genres.length; j++) {
+                myGenres.push(topArtists.body.items[i].genres[j]);
+            }
         }
     };
 
     for (let i = 0; i < max_length; i++) {
-        myArtists[artistIndex++] = {
-            name: followedArtists.body.artists.items[i].name,
-            id: followedArtists.body.artists.items[i].id
-        }
-        for (let j = 0; j < followedArtists.body.artists.items[i].genres.length; j++) {
-            myGenres.push(followedArtists.body.artists.items[i].genres[j]);
+        if (followedArtists.body.artists.items[i] != undefined) {
+            myArtists[artistIndex++] = {
+                name: followedArtists.body.artists.items[i].name,
+                id: followedArtists.body.artists.items[i].id
+            }
+            for (let j = 0; j < followedArtists.body.artists.items[i].genres.length; j++) {
+                myGenres.push(followedArtists.body.artists.items[i].genres[j]);
+            }
         }
     };
 
