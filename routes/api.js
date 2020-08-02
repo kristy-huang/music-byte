@@ -49,10 +49,10 @@ router.get('/callback', async (req, res) => {
         spotifyApi.setAccessToken(access_token);
         spotifyApi.setRefreshToken(refresh_token);
         console.log('Success: Authentication success, access and refresh tokens obtained');
-        res.redirect('http://localhost:4200/loading');
+        res.redirect('/loading');
     } catch (err) {
         console.log(`callback: Authentication error: ${err}`);
-        res.redirect('http://localhost:4200/welcome');
+        res.redirect('/welcome');
     }
 });
 
