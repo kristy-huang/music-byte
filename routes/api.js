@@ -6,7 +6,7 @@ const spotify_api_calls = require('./spotify_api_calls');
 //Set up .env file
 require('dotenv').config();
 
-let myGenres = [];
+// let myGenres = [];
 
 const scopes = [
     'user-read-private',
@@ -25,7 +25,7 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 router.get('/login', async (req, res) => {
-    myGenres = [];
+    req.session.myGenres = [];
     try {
         const authorizeURL = await spotifyApi.createAuthorizeURL(scopes);
         // console.log(authorizeURL);
@@ -154,7 +154,7 @@ router.get('/myTopTracks', async (req, res) => {
                     .then(result => {
                         for (let i = 0; i < result.length; i++) {
                             for (let j = 0; j < result[i].data.genres.length; j++) {
-                                myGenres.push(result[i].data.genres[j]);
+                                req.session.myGenres.push(result[i].data.genres[j]);
                             }
                         }
                     });
@@ -178,7 +178,7 @@ router.get('/myArtists', (req, res) => {
         spotify_api_calls.getArtists(res,
             spotify_api_calls.getTop(req.session.access_token, 'artists'),
             spotify_api_calls.getFollowedArtists(req.session.access_token),
-            myGenres)
+            req.session.myGenres)
             .catch(err => {
                 console.log(`myArtists: ${err}`);
                 res.status(400).send(err);
@@ -191,11 +191,11 @@ router.get('/myArtists', (req, res) => {
 router.get('/myGenres', (req, res) => {
     if (req.session.access_token) {
         //Set is used instead of array because we don't want repetition
-        let myGenreSet = new Set(myGenres);
-        myGenres = Array.from(myGenreSet);
+        let myGenreSet = new Set(req.session.myGenres);
+        req.session.myGenres = Array.from(myGenreSet);
         console.log('Success: Retrieved genres');
-        console.log(myGenreSet);
-        res.status(200).send(myGenres);
+        console.log(req.session.myGenres);
+        res.status(200).send(req.session.myGenres);
     } else {
         res.status(401).send({});
     }
@@ -205,7 +205,7 @@ router.get('/recommendPlaylists', (req, res) => {
     if (req.session.access_token) {
         spotify_api_calls.searchAll(
             req.session.access_token,
-            myGenres,
+            req.session.myGenres,
             'playlist')
             .then(result => {
                 let playlistData = [];
