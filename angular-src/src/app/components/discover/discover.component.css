@@ -15,6 +15,7 @@ h3 {
 .search-res {
     color: lightgray;
     text-align: left;
+    cursor: pointer;
 }
 
 a {

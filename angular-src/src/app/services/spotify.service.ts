@@ -13,7 +13,7 @@ export class SpotifyService {
   getPlaylists(url: string): Observable<Playlist[]> {
     let headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json');
-    return this.http.get(url, { headers: headers }).pipe(
+    return this.http.get(url, { withCredentials: true, headers: headers }).pipe(
       map((res: any) => {
         let results = res.map((item) => {
           return new Playlist(
@@ -34,7 +34,7 @@ export class SpotifyService {
   getPlaylist(url: string): Observable<Playlist> {
     let headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json');
-    return this.http.get(url, { headers: headers }).pipe(
+    return this.http.get(url, { withCredentials: true, headers: headers }).pipe(
       map((res: any) => {
         return new Playlist(
           res.name,
@@ -52,7 +52,7 @@ export class SpotifyService {
   getTracks(url: string): Observable<Track[]> {
     let headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json');
-    return this.http.get(url, { headers: headers }).pipe(
+    return this.http.get(url, { withCredentials: true, headers: headers }).pipe(
       map((res: any) => {
         let results = res.map((item) => {
           return new Track(
@@ -74,7 +74,7 @@ export class SpotifyService {
   getProfile(url: string): Observable<Profile> {
     let headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json');
-    return this.http.get(url, { headers: headers }).pipe(
+    return this.http.get(url, { withCredentials: true, headers: headers }).pipe(
       map((res: any) => {
         return new Profile(res.name, res.images);
       })
@@ -84,6 +84,6 @@ export class SpotifyService {
   getInfo(url: string): Promise<Object> {
     let headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json');
-    return this.http.get(url, { headers: headers }).toPromise();
+    return this.http.get(url, { withCredentials: true, headers: headers }).toPromise();
   }
 }

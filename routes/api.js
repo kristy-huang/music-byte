@@ -7,7 +7,6 @@ const spotify_api_calls = require('./spotify_api_calls');
 require('dotenv').config();
 
 let myGenres = [];
-let counter = 0;
 
 const scopes = [
     'user-read-private',
@@ -46,8 +45,10 @@ router.get('/callback', async (req, res) => {
         let data = await spotifyApi.authorizationCodeGrant(code);
         const access_token = data.body.access_token;
         const refresh_token = data.body.refresh_token;
-        spotifyApi.setAccessToken(access_token);
-        spotifyApi.setRefreshToken(refresh_token);
+        // spotifyApi.setAccessToken(access_token);
+        // spotifyApi.setRefreshToken(refresh_token);
+        req.session.access_token = access_token;
+        req.session.refresh_token = refresh_token;
         console.log('Success: Authentication success, access and refresh tokens obtained');
         res.redirect('/loading');
     } catch (err) {
@@ -57,7 +58,7 @@ router.get('/callback', async (req, res) => {
 });
 
 router.get('/verify', (req, res) => {
-    if (spotifyApi.getAccessToken() === undefined || spotifyApi.getAccessToken() === null) {
+    if (req.session.access_token === undefined || req.session.access_token === null) {
         res.json({ success: false })
     } else {
         res.json({ success: true });
@@ -89,15 +90,18 @@ router.get('/verify', (req, res) => {
 // });
 
 router.get('/logout', (req, res) => {
-    spotifyApi.setAccessToken(null);
-    spotifyApi.setRefreshToken(null);
-    myGenres = [];
-    // console.log(spotifyApi.getAccessToken());
-    if (spotifyApi.getAccessToken() === null && spotifyApi.getRefreshToken() === null) {
-        res.status(200).json({ success: true });
-    } else {
-        res.status(400).json({ success: false });
-    }
+    // spotifyApi.setAccessToken(null);
+    // spotifyApi.setRefreshToken(null);
+
+
+    // delete the session
+    req.session.destroy((err) => {
+        if (err) {
+            res.status(400).json({ success: false });
+        } else {
+            res.status(200).json({ success: true });
+        }
+    });
 });
 
 /*router.get('/playlistImg', (req, res) => {
@@ -108,20 +112,24 @@ router.get('/logout', (req, res) => {
 });*/
 
 router.get('/myProfile', (req, res) => {
-    spotify_api_calls.getUserProfile(spotifyApi.getAccessToken())
-        .then(result => {
-            let profile = { 'name': result.data.display_name, 'images': null };
-            if (result.data.images[0] != undefined) {
-                if (result.data.images[0].url != null && result.data.images[0].url != undefined) {
-                    profile.images = result.data.images[0].url;
+    if (req.session.access_token) {
+        spotify_api_calls.getUserProfile(req.session.access_token)
+            .then(result => {
+                let profile = { 'name': result.data.display_name, 'images': null };
+                if (result.data.images[0] != undefined) {
+                    if (result.data.images[0].url != null && result.data.images[0].url != undefined) {
+                        profile.images = result.data.images[0].url;
+                    }
                 }
-            }
-            console.log(`Success: Retrieved profile info`);
-            res.status(200).send(profile);
-        }).catch(err => {
-            console.log(`myProfile: ${err}`);
-            res.status(400).send(err);
-        });
+                console.log(`Success: Retrieved profile info`);
+                res.status(200).send(profile);
+            }).catch(err => {
+                console.log(`myProfile: ${err}`);
+                res.status(400).send(err);
+            });
+    } else {
+        res.status(401).send({});
+    }
 });
 
 /**
@@ -130,203 +138,235 @@ router.get('/myProfile', (req, res) => {
  */
 
 router.get('/myTopTracks', async (req, res) => {
-    let myTopTracks = []; //contains an arr of the artists' href of each track
-    let counter = 0;
-    try {
-        let result = await spotifyApi.getMyTopTracks();
-        for (let i = 0; i < result.body.items.length; i++) {
-            for (let j = 0; j < result.body.items[i].album.artists.length; j++) {
-                myTopTracks[counter++] = result.body.items[i].album.artists[j].href;
-            }
-        }
-        spotify_api_calls.getGenreFromTracks(spotifyApi.getAccessToken(), myTopTracks)
+    if (req.session.access_token) {
+        let myTopTracks = []; //contains an arr of the artists' href of each track
+        let counter = 0;
+
+        spotify_api_calls.getTop(req.session.access_token, 'tracks')
             .then(result => {
-                for (let i = 0; i < result.length; i++) {
-                    for (let j = 0; j < result[i].data.genres.length; j++) {
-                        myGenres.push(result[i].data.genres[j]);
+                for (let i = 0; i < result.data.items.length; i++) {
+                    for (let j = 0; j < result.data.items[i].album.artists.length; j++) {
+                        myTopTracks[counter++] = result.data.items[i].album.artists[j].href;
                     }
                 }
+                spotify_api_calls.getGenreFromTracks(req.session.access_token, myTopTracks)
+                    .then(result => {
+                        for (let i = 0; i < result.length; i++) {
+                            for (let j = 0; j < result[i].data.genres.length; j++) {
+                                myGenres.push(result[i].data.genres[j]);
+                            }
+                        }
+                    });
+                console.log(`Success: Retrieved top tracks`);
+                res.status(200).send(myTopTracks);
+            }).catch(err => {
+                console.log(`myTopTracks: ${err}`);
+                if (err.message === "Unauthorized") {
+                    res.status(401).send(err);
+                } else {
+                    res.status(400).send(err);
+                }
             });
-        console.log(`Success: Retrieved top tracks`);
-        res.status(200).send(myTopTracks);
-    } catch (err) {
-        console.log(`myTopTracks: ${err}`);
-        if (err.message === "Unauthorized") {
-            res.status(401).send(err);
-        } else {
-            res.status(400).send(err);
-        }
+    } else {
+        res.status(401).send({});
     }
 });
 
 router.get('/myArtists', (req, res) => {
-    spotify_api_calls.getArtists(res,
-        spotifyApi.getMyTopArtists(),
-        spotifyApi.getFollowedArtists(),
-        myGenres)
-        .catch(err => {
-            console.log(`myArtists: ${err}`);
-            res.status(400).send(err);
-        });
+    if (req.session.access_token) {
+        spotify_api_calls.getArtists(res,
+            spotify_api_calls.getTop(req.session.access_token, 'artists'),
+            spotify_api_calls.getFollowedArtists(req.session.access_token),
+            myGenres)
+            .catch(err => {
+                console.log(`myArtists: ${err}`);
+                res.status(400).send(err);
+            });
+    } else {
+        res.status(401).send({});
+    }
 });
 
 router.get('/myGenres', (req, res) => {
-    //Set is used instead of array because we don't want repetition
-    let myGenreSet = new Set(myGenres);
-    myGenres = Array.from(myGenreSet);
-    console.log('Success: Retrieved genres');
-    console.log(myGenreSet);
-    res.status(200).send(myGenres);
+    if (req.session.access_token) {
+        //Set is used instead of array because we don't want repetition
+        let myGenreSet = new Set(myGenres);
+        myGenres = Array.from(myGenreSet);
+        console.log('Success: Retrieved genres');
+        console.log(myGenreSet);
+        res.status(200).send(myGenres);
+    } else {
+        res.status(401).send({});
+    }
 });
 
 router.get('/recommendPlaylists', (req, res) => {
-    spotify_api_calls.searchAll(
-        spotifyApi.getAccessToken(),
-        myGenres,
-        'playlist')
-        .then(result => {
-            let playlistData = [];
-            let counter = 0;
+    if (req.session.access_token) {
+        spotify_api_calls.searchAll(
+            req.session.access_token,
+            myGenres,
+            'playlist')
+            .then(result => {
+                let playlistData = [];
+                let counter = 0;
 
-            for (let i = 0; i < result.length; i++) {
-                if (result[i].data.playlists.offset < result[i].data.playlists.total) {
-                    for (let j = 0; j < result[i].data.playlists.items.length; j++) {
-                        playlistData[counter] = {
-                            name: result[i].data.playlists.items[j].name,
-                            id: result[i].data.playlists.items[j].id,
-                            owner: result[i].data.playlists.items[j].owner.display_name,
-                            description: result[i].data.playlists.items[j].description,
-                            external_urls: result[i].data.playlists.items[j].external_urls.spotify,
-                            tracks: result[i].data.playlists.items[j].tracks,
-                            images: ''
-                        };
-                        if (result[i].data.playlists.items[j].images[0] != undefined) {
-                            playlistData[counter++].images = result[i].data.playlists.items[j].images[0].url
+                for (let i = 0; i < result.length; i++) {
+                    if (result[i].data.playlists.offset < result[i].data.playlists.total) {
+                        for (let j = 0; j < result[i].data.playlists.items.length; j++) {
+                            playlistData[counter] = {
+                                name: result[i].data.playlists.items[j].name,
+                                id: result[i].data.playlists.items[j].id,
+                                owner: result[i].data.playlists.items[j].owner.display_name,
+                                description: result[i].data.playlists.items[j].description,
+                                external_urls: result[i].data.playlists.items[j].external_urls.spotify,
+                                tracks: result[i].data.playlists.items[j].tracks,
+                                images: ''
+                            };
+                            if (result[i].data.playlists.items[j].images[0] != undefined) {
+                                playlistData[counter++].images = result[i].data.playlists.items[j].images[0].url
+                            }
                         }
                     }
+                    // console.log(result[i].data);
                 }
-                // console.log(result[i].data);
-            }
 
-            if (playlistData.length === 0) {
-                console.log('Success: Retrieved 0 recommended playlists');
-                res.status(400).json({ 'err': '', 'noData': true });
-            } else {
-                playlistData = spotify_api_calls.shuffleArr(playlistData);
-                console.log('Success: Retrieved recommended playlists');
-                res.status(200).send(playlistData);
-            }
-        })
-        .catch(err => {
-            console.log(`recommendPlaylists: ${err}`);
-            res.status(400).json({ 'err': err, 'noData': false });
-        });
+                if (playlistData.length === 0) {
+                    console.log('Success: Retrieved 0 recommended playlists');
+                    res.status(400).json({ 'err': '', 'noData': true });
+                } else {
+                    playlistData = spotify_api_calls.shuffleArr(playlistData);
+                    console.log('Success: Retrieved recommended playlists');
+                    res.status(200).send(playlistData);
+                }
+            })
+            .catch(err => {
+                console.log(`recommendPlaylists: ${err}`);
+                res.status(400).json({ 'err': err, 'noData': false });
+            });
+    } else {
+        res.status(401).send({});
+    }
 });
 
 router.get('/randomPlaylists', async (req, res) => {
-    const randomOffset = Math.floor(Math.random() * 1900);
-    let playlistData = [];
+    if (req.session.access_token) {
+        const randomOffset = Math.floor(Math.random() * 1900);
+        let playlistData = [];
 
-    try {
-        let result = await spotifyApi.search(spotify_api_calls.getRandomQuery(), ['playlist'], { limit: 50, offset: randomOffset });
-        // console.log(result.body);
-        for (let i = 0; i < result.body.playlists.items.length; i++) {
-            playlistData[i] = {
-                name: result.body.playlists.items[i].name,
-                id: result.body.playlists.items[i].id,
-                owner: result.body.playlists.items[i].owner.display_name,
-                description: result.body.playlists.items[i].description,
-                external_urls: result.body.playlists.items[i].external_urls.spotify,
-                tracks: result.body.playlists.items[i].tracks,
-                images: ''
-            };
-            if (result.body.playlists.items[i].images[0] != undefined) {
-                playlistData[i].images = result.body.playlists.items[i].images[0].url;
+        spotify_api_calls.search(req.session.access_token, spotify_api_calls.getRandomQuery(), 'playlist', 50, randomOffset)
+        .then(result => {
+            for (let i = 0; i < result.data.playlists.items.length; i++) {
+                playlistData[i] = {
+                    name: result.data.playlists.items[i].name,
+                    id: result.data.playlists.items[i].id,
+                    owner: result.data.playlists.items[i].owner.display_name,
+                    description: result.data.playlists.items[i].description,
+                    external_urls: result.data.playlists.items[i].external_urls.spotify,
+                    tracks: result.data.playlists.items[i].tracks,
+                    images: ''
+                };
+                if (result.data.playlists.items[i].images[0] != undefined) {
+                    playlistData[i].images = result.data.playlists.items[i].images[0].url;
+                }
             }
-        }
-        console.log(`Success: Retrieved random playlists`);
-        res.status(200).send(playlistData);
-    } catch (err) {
-        console.log(`randomPlaylists: ${err}`);
-        if (err.message === "Unauthorized") {
-            res.status(401).send(err);
-        } else {
-            res.status(400).send(err);
-        }
+            console.log(`Success: Retrieved random playlists`);
+            res.status(200).send(playlistData);
+        }).catch(err => {
+            console.log(`randomPlaylists: ${err}`);
+            if (err.message === "Unauthorized") {
+                res.status(401).send(err);
+            } else {
+                res.status(400).send(err);
+            }
+        })
+    } else {
+        res.status(401).send({});
     }
 });
 
 router.get('/search', async (req, res) => {
-    let playlistData = [];
-    try {
-        let result = await spotifyApi.search(req.query.searchStr, ['playlist'], { limit: 20, offset: 0 });
-        for (let i = 0; i < result.body.playlists.items.length; i++) {
-            playlistData[i] = {
-                name: result.body.playlists.items[i].name,
-                id: result.body.playlists.items[i].id,
-                owner: result.body.playlists.items[i].owner.display_name,
-                description: result.body.playlists.items[i].description,
-                external_urls: result.body.playlists.items[i].external_urls.spotify,
-                tracks: result.body.playlists.items[i].tracks,
-                images: ''
-            };
-            if (result.body.playlists.items[i].images[0] != undefined) {
-                playlistData[i].images = result.body.playlists.items[i].images[0].url;
+    if (req.session.access_token) {
+        let playlistData = [];
+        spotify_api_calls.search(req.session.access_token, req.query.searchStr, 'playlist', 20, 0)
+        .then(result => {
+            for (let i = 0; i < result.data.playlists.items.length; i++) {
+                playlistData[i] = {
+                    name: result.data.playlists.items[i].name,
+                    id: result.data.playlists.items[i].id,
+                    owner: result.data.playlists.items[i].owner.display_name,
+                    description: result.data.playlists.items[i].description,
+                    external_urls: result.data.playlists.items[i].external_urls.spotify,
+                    tracks: result.data.playlists.items[i].tracks,
+                    images: ''
+                };
+                if (result.data.playlists.items[i].images[0] != undefined) {
+                    playlistData[i].images = result.data.playlists.items[i].images[0].url;
+                }
             }
-        }
-        console.log(`Success: Retrieved searched playlists`);
-        res.status(200).send(playlistData);
-    } catch (err) {
-        console.log(`search: ${err}`);
-        res.status(400).send(err);
+            console.log(`Success: Retrieved searched playlists`);
+            res.status(200).send(playlistData);
+        }).catch(err => {
+            console.log(`search: ${err}`);
+            res.status(400).send(err);
+        });
+    } else {
+        res.status(401).send({});
     }
 });
 
 router.get('/selectedPlaylist', async (req, res) => {
-    try {
-        let result = await spotifyApi.getPlaylist(req.query.playlistId);
-        let playlistData = {
-            name: result.body.name,
-            id: result.body.id,
-            owner: result.body.owner.display_name,
-            description: result.body.description,
-            external_urls: result.body.external_urls.spotify,
-            tracks: '',
-            images: ''
-        }
-        if (result.body.images[0] != undefined) {
-            playlistData.images = result.body.images[0].url;
-        }
-        console.log('Success: Retrieved selected playlist');
-        res.status(200).send(playlistData);
-    } catch (err) {
-        console.log(`selectedPlaylist: ${err}`);
-        res.status(400).send(err);
+    if (req.session.access_token) {
+        spotify_api_calls.getPlaylist(req.session.access_token, req.query.playlistId)
+            .then(result => {
+                let playlistData = {
+                    name: result.data.name,
+                    id: result.data.id,
+                    owner: result.data.owner.display_name,
+                    description: result.data.description,
+                    external_urls: result.data.external_urls.spotify,
+                    tracks: '',
+                    images: ''
+                }
+                if (result.data.images[0] != undefined) {
+                    playlistData.images = result.data.images[0].url;
+                }
+                console.log('Success: Retrieved selected playlist');
+                res.status(200).send(playlistData);
+            }).catch(err => {
+                console.log(`selectedPlaylist: ${err}`);
+                res.status(400).send(err);
+            });
+    } else {
+        res.status(401).send({});
     }
 });
 
 router.get('/tracks', async (req, res) => {
-    let trackData = [];
-    // console.log(req.query.playlistId);
-    spotify_api_calls.getTracks(spotifyApi.getAccessToken(), req.query.playlistId).then(result => {
-        for (let i = 0; i < result.data.items.length; i++) {
-            trackData[i] = {
-                name: result.data.items[i].track.name,
-                id: result.data.items[i].track.id,
-                artists: [],
-                duration_ms: result.data.items[i].track.duration_ms,
-                external_urls: result.data.items[i].track.external_urls.spotify,
-                preview_url: result.data.items[i].track.preview_url,
-            };
-            for (let j = 0; j < result.data.items[i].track.artists.length; j++) {
-                trackData[i].artists[j] = result.data.items[i].track.artists[j].name;
+    if (req.session.access_token) {
+        let trackData = [];
+        // console.log(req.query.playlistId);
+        spotify_api_calls.getTracks(req.session.access_token, req.query.playlistId).then(result => {
+            for (let i = 0; i < result.data.items.length; i++) {
+                trackData[i] = {
+                    name: result.data.items[i].track.name,
+                    id: result.data.items[i].track.id,
+                    artists: [],
+                    duration_ms: result.data.items[i].track.duration_ms,
+                    external_urls: result.data.items[i].track.external_urls.spotify,
+                    preview_url: result.data.items[i].track.preview_url,
+                };
+                for (let j = 0; j < result.data.items[i].track.artists.length; j++) {
+                    trackData[i].artists[j] = result.data.items[i].track.artists[j].name;
+                }
             }
-        }
-        console.log(`Success: Retrieved tracks`)
-        res.status(200).send(trackData);
-    }).catch(err => {
-        console.log(`tracks: ${err}`);
-        res.status(400).send(err);
-    });
+            console.log(`Success: Retrieved tracks`)
+            res.status(200).send(trackData);
+        }).catch(err => {
+            console.log(`tracks: ${err}`);
+            res.status(400).send(err);
+        });
+    } else {
+        res.status(401).send({});
+    }
 })
 module.exports = router;

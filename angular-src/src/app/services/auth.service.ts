@@ -27,17 +27,15 @@ export class AuthService {
   }
 
   authenticateUser() {
-    let headers = new HttpHeaders();
-    headers.append('Content-Type', 'application/json');
     return this.http
-      .get(this.authURL, { headers: headers })
+      .get(this.authURL, { withCredentials: true })
       .pipe(map((res: any) => res));
   }
 
   logout() {
     let headers = new HttpHeaders();
     return this.http
-      .get(this.logoutURL, { headers: headers })
+      .get(this.logoutURL, { withCredentials: true, headers: headers })
       .pipe(map((res: any) => res));
   }
 
@@ -45,7 +43,7 @@ export class AuthService {
     let headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json');
     return this.http
-      .get(this.validateURL, { headers: headers })
+      .get(this.validateURL, { withCredentials: true, headers: headers })
       .pipe(map((res: any) => res));
   }
 }

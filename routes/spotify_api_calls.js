@@ -31,16 +31,8 @@ const getRandomQuery = function() {
     //Gets a random character from characters string ranging from index 0 to 26
     const randomCharacter = characters.charAt(Math.floor(Math.random() * characters.length));
 
-    let randomQuery = '';
-    // Places the wildcard character at the beginning or both beginning and end randomly.
-    switch (Math.round(Math.random())) {
-        case 0:
-            randomQuery = randomCharacter + '%';
-            break;
-        case 1:
-            randomQuery = '%' + randomCharacter + '%';
-            break;
-    }
+    let randomQuery = randomCharacter;
+
     console.log(randomQuery);
     return randomQuery;
 }
@@ -60,9 +52,43 @@ const shuffleArr = function(arr) {
     return arr;
 }
 
-const search = function(access_token, query, type) {
-    const randomOffset = Math.floor(Math.random() * 500);
-    const limit = 8;
+const getTop = function(access_token, type) {
+    return axios({
+        method: 'get',
+        url: `https://api.spotify.com/v1/me/top/${type}`,
+        headers: {
+            'Authorization': `Bearer ${access_token}`
+        }
+    })
+}
+
+const getPlaylist = function(access_token, playlist_id) {
+    return axios({
+        method: 'get',
+        url: `https://api.spotify.com/v1/playlists/${playlist_id}`,
+        headers: {
+            'Authorization': `Bearer ${access_token}`
+        }
+    })
+}
+
+const getFollowedArtists = function(access_token) {
+    return axios({
+        method: 'get',
+        url: `https://api.spotify.com/v1/me/following?type=artist`,
+        headers: {
+            'Authorization': `Bearer ${access_token}`
+        }
+    })
+}
+
+const search = function(access_token, query, type, limit, offset) {
+    let randomOffset = '';
+    if (offset === undefined) {
+        randomOffset = Math.floor(Math.random() * 500);
+    } else {
+        randomOffset = offset;
+    }
 
     return axios({
         method: 'get',
@@ -100,7 +126,7 @@ const searchAll = async function(access_token, myGenres, type) {
                 query += keywords[i] + '%20';
             }
         }
-        promiseArr[i] = search(access_token, query, type);
+        promiseArr[i] = search(access_token, query, type, 8);
     }
     return Promise.all(promiseArr);
 }
@@ -115,26 +141,26 @@ const getArtists = async function(res, getMyTopArtists, getFollowedArtists, myGe
         getFollowedArtists
     ]);
 
-    for (let i = 0; i < topArtists.body.items.length; i++) {
-        if (topArtists.body.items[i] != undefined) {
+    for (let i = 0; i < topArtists.data.items.length; i++) {
+        if (topArtists.data.items[i] != undefined) {
             myArtists[artistIndex++] = {
-                name: topArtists.body.items[i].name,
-                id: topArtists.body.items[i].id
+                name: topArtists.data.items[i].name,
+                id: topArtists.data.items[i].id
             }
-            for (let j = 0; j < topArtists.body.items[i].genres.length; j++) {
-                myGenres.push(topArtists.body.items[i].genres[j]);
+            for (let j = 0; j < topArtists.data.items[i].genres.length; j++) {
+                myGenres.push(topArtists.data.items[i].genres[j]);
             }
         }
     };
 
     for (let i = 0; i < max_length; i++) {
-        if (followedArtists.body.artists.items[i] != undefined) {
+        if (followedArtists.data.artists.items[i] != undefined) {
             myArtists[artistIndex++] = {
-                name: followedArtists.body.artists.items[i].name,
-                id: followedArtists.body.artists.items[i].id
+                name: followedArtists.data.artists.items[i].name,
+                id: followedArtists.data.artists.items[i].id
             }
-            for (let j = 0; j < followedArtists.body.artists.items[i].genres.length; j++) {
-                myGenres.push(followedArtists.body.artists.items[i].genres[j]);
+            for (let j = 0; j < followedArtists.data.artists.items[i].genres.length; j++) {
+                myGenres.push(followedArtists.data.artists.items[i].genres[j]);
             }
         }
     };
@@ -175,6 +201,10 @@ module.exports = {
     getUserProfile: getUserProfile,
     getRandomQuery: getRandomQuery,
     shuffleArr: shuffleArr,
+    getTop: getTop,
+    getPlaylist: getPlaylist,
+    getFollowedArtists: getFollowedArtists,
+    search: search,
     searchAll: searchAll,
     getArtists: getArtists,
     getTracks: getTracks,
