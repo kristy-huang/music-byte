@@ -25,6 +25,7 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 router.get('/login', async (req, res) => {
+    myGenres = [];
     try {
         const authorizeURL = await spotifyApi.createAuthorizeURL(scopes);
         // console.log(authorizeURL);
